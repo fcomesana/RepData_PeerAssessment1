@@ -1,12 +1,6 @@
----
-title: "Reproducible research"
-subtitle: "Assignment 1"
-author: "by Federico Comesaña"
-date: "October 23, 2016"
-output: 
-  html_document: 
-    keep_md: yes
----
+# Reproducible research
+by Federico Comesaña  
+October 23, 2016  
 
 This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
 
@@ -25,13 +19,15 @@ The dataset is stored in a comma-separated-value (CSV) file and there are a tota
 
 1. Load the data
 
-```{r}
+
+```r
 base <- read.csv("activity.csv", stringsAsFactors = FALSE)
 ```
 
 2. Process/transform the data (if necessary) into a format suitable for your analysis
 
-```{r}
+
+```r
 library(lubridate, quietly = TRUE, warn.conflicts = FALSE)
 base$date <- ymd(base$date)
 ```
@@ -42,7 +38,8 @@ For this part of the assignment, you can ignore the missing values in the datase
 
 1. Calculate the total number of steps taken per day
 
-```{r}
+
+```r
 library(dplyr, quietly = TRUE, warn.conflicts = FALSE)
 byday <- base %>%
   group_by(date) %>%
@@ -51,7 +48,8 @@ byday <- base %>%
 
 2. Make a histogram of the total number of steps taken each day
 
-```{r}
+
+```r
 library(ggplot2, quietly = TRUE, warn.conflicts = FALSE)
 g <- ggplot(byday, aes(steps)) + 
   geom_histogram(bins = 10) +
@@ -59,18 +57,27 @@ g <- ggplot(byday, aes(steps)) +
 g
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
 3. Calculate and report the mean and median of the total number of steps taken per day
 
-```{r}
+
+```r
 summary <- c(mean = mean(byday$steps), median = median(byday$steps))
 summary
+```
+
+```
+##     mean   median 
+##  9354.23 10395.00
 ```
 
 ## What is the average daily activity pattern?
 
 1. Make a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-```{r}
+
+```r
 byinterval <- base %>%
   group_by(interval) %>%
   summarize(steps = mean(steps, na.rm = TRUE))
@@ -81,11 +88,19 @@ g <- ggplot(byinterval, aes(interval, steps)) +
 g
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-```{r}
+
+```r
 maxinterval <- byinterval[which.max(byinterval$steps), ]
 as.data.frame(maxinterval)
+```
+
+```
+##   interval    steps
+## 1      835 206.1698
 ```
 
 ## Imputing missing values
@@ -94,9 +109,14 @@ Note that there are a number of days/intervals where there are missing values (c
 
 1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with `NA`s)
 
-```{r}
+
+```r
 nas <- sum(is.na(base))
 nas
+```
+
+```
+## [1] 2304
 ```
 
 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc. 
@@ -105,7 +125,8 @@ nas
 
 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-```{r}
+
+```r
 base2 <- base
 for (i in 1:nrow(base2)) {
   if (is.na(base2$steps[i])) {
@@ -116,7 +137,8 @@ for (i in 1:nrow(base2)) {
 
 4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-```{r}
+
+```r
 byday2 <- base2 %>%
   group_by(date) %>%
   summarize(steps = sum(steps))
@@ -125,8 +147,18 @@ g <- ggplot(byday2, aes(steps)) +
   geom_histogram(bins = 10) +
   labs(title = "Steps by day histogram", x = "steps each day", y = "% of days")
 g
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+
+```r
 data.frame(original = summary, new = c(mean(byday2$steps), median(byday2$steps)))
+```
+
+```
+##        original      new
+## mean    9354.23 10766.19
+## median 10395.00 10766.19
 ```
 
 **My answer:** The replacement of the missed values of steps with the mean of the average day make the mean converge to the median in a higher value.
@@ -137,14 +169,16 @@ For this part the `weekdays()` function may be of some help here. Use the datase
 
 1. Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 
-```{r}
+
+```r
 base2$week <- ifelse(weekdays(base2$date, abbreviate = TRUE) %in% c("Sat", "Sun"), "weekend", "weekday") 
 base2$week <- factor(base2$week)
 ```
 
 2. Make a panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
 
-```{r}
+
+```r
 byinterval2 <- base2 %>%
   group_by(week, interval) %>%
   summarize(steps = mean(steps, na.rm = TRUE))
@@ -155,3 +189,5 @@ g <- ggplot(byinterval2, aes(interval, steps)) +
   labs(title = "Steps by interval", x = "5-minutes interval", y = "average number of steps")
 g
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
